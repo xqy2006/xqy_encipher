@@ -93,7 +93,11 @@ def function2():
     file_path1 = filedialog.askopenfilename() # 获取路径
     a2.insert(INSERT, file_path1)
 def function3():#jiami
-    mima = int(a1.get())
+    mima = a1.get()
+    newmima = ''
+    for i in mima:
+        newmima = newmima+str(ord(i))
+    mima = int(newmima)
     mima_len = len(str(mima))
     cha = 1024
     save_dir = filedialog.asksaveasfilename(initialfile=file_path1+'.xqy',filetypes=[('XUQINYANG FILES','.xqy')])
@@ -104,7 +108,11 @@ def function3():#jiami
         bar1['value'] = 0
         tkinter.messagebox.showinfo('加密','加密完成，保存路径为'+save_dir)
 def function4():#jiemi
-    mima = int(a1.get())
+    mima = a1.get()
+    newmima = ''
+    for i in mima:
+        newmima = newmima+str(ord(i))
+    mima = int(newmima)
     mima_len = len(str(mima))
     cha = 1024
     save_dir = filedialog.asksaveasfilename(initialfile=file_path2[:file_path2.rfind('.')])
