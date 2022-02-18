@@ -85,12 +85,14 @@ def function1():
     OpenFile = Tk()   #创建新窗口
     OpenFile.withdraw()
     file_path2 = filedialog.askopenfilename(filetypes=[('XUQINYANG FILES','.xqy')]) # 获取路径
+    a3.delete(0, 'end')
     a3.insert(INSERT, file_path2)
 def function2():
     global file_path1
     OpenFile = Tk()   #创建新窗口
     OpenFile.withdraw()
     file_path1 = filedialog.askopenfilename() # 获取路径
+    a2.delete(0, 'end')
     a2.insert(INSERT, file_path1)
 def function3():#jiami
     mima = a1.get()
