@@ -28,11 +28,11 @@ def write(write_bytes,dir,address):
     result=f.write(write_bytes)
     f.close()
     return result
-def realcode1(dir,mima,mima_len,i,num,q):
+def realcode1(dir,mima,mima_len,i,num,q,thnum):
     file_stats = os.stat(dir)
     max = int(file_stats.st_size)
     while True:
-        if i+1024>=(max*num)//64:
+        if i+1024>=(min(max,10000000)*num)//thnum:
             q.put('done')
             break
         a=int(read(dir,i,mima_len//2+1),16)
@@ -51,8 +51,9 @@ def coding(dir,mima,mima_len):
     max = int(file_stats.st_size)
     q = Queue()
     threads = []
-    for i in range(64):
-        threads.append(threading.Thread(target=realcode1, args=(dir,mima,mima_len,(max*i)//4,i+1,q,)))
+    thnum = int(ath.get())
+    for i in range(int(ath.get())):
+        threads.append(multiprocessing.Process(target=realcode1, args=(dir,mima,mima_len,(min(max,10000000)*i)//int(ath.get()),i+1,q,thnum,)))
     for i in threads:
         i.start()
     times = 0
@@ -60,10 +61,10 @@ def coding(dir,mima,mima_len):
         stepnum = q.get()
         if stepnum=='done':
             times += 1
-            if times == 64:
-                bar1.stop()
+            if times == int(ath.get()):
                 break
         else:
+            bar1.step(stepnum)
             root.update()
     for i in threads:
         i.join()
@@ -97,8 +98,10 @@ def function3():#jiami
     cha = 1024
     save_dir = filedialog.asksaveasfilename(initialfile=file_path1+'.xqy',filetypes=[('XUQINYANG FILES','.xqy')])
     if save_dir!='':
-        bar1.start()
+        file_stats = os.stat(file_path1)
+        bar1['maximum'] = min(int(file_stats.st_size),10000000) + 1
         jiami(file_path1,save_dir,mima,mima_len)
+        bar1['value'] = 0
         tkinter.messagebox.showinfo('加密','加密完成，保存路径为'+save_dir)
 def function4():#jiemi
     mima = a1.get()
@@ -110,18 +113,22 @@ def function4():#jiemi
     cha = 1024
     save_dir = filedialog.asksaveasfilename(initialfile=file_path2[:file_path2.rfind('.')])
     if save_dir!='':
-        bar1.start()
+        file_stats = os.stat(file_path2)
+        bar1['maximum'] = min(int(file_stats.st_size),10000000) + 1
         jiemi(file_path2,save_dir,mima,mima_len)
+        bar1['value'] = 0
         tkinter.messagebox.showinfo('解密','解密完成，保存路径为'+save_dir)
 if __name__ == '__main__':
     multiprocessing.freeze_support()
 
     root = Tk()
     root.title('xqy_encipher')
-    root.minsize(410, 110)
-    root.maxsize(410, 110)
+    root.minsize(410, 130)
+    root.maxsize(410, 130)
     L1 = Label(root, text="密码:",width=10)
     a1 = Entry(root,width=20)
+    Lth = Label(root, text="使用进程数:",width=10)
+    ath = Entry(root,width=20)
     L2 = Label(root, text="加密:",width=10)
     a2 = Entry(root,width=20)
     b = Button(root,text='浏览',command=function2,width=10)
@@ -130,16 +137,19 @@ if __name__ == '__main__':
     a3 = Entry(root,width=20)
     d = Button(root,text='浏览',command=function1,width=10)
     e = Button(root,text='解密',command=function4,width=10)
-    bar1 = tkinter.ttk.Progressbar(root,length = 400,mode='indeterminate')
+    bar1 = tkinter.ttk.Progressbar(root,length = 400)
     L1.grid(row=0,column=0)
     a1.grid(row=0,column=1)  # 将小部件放置到主窗口中
-    b.grid(row=1,column=2)
-    c.grid(row=1,column=3)
-    d.grid(row=2,column=2)
-    e.grid(row=2,column=3)
-    L2.grid(row=1,column=0)
-    L3.grid(row=2,column=0)
-    a2.grid(row=1,column=1)
-    a3.grid(row=2,column=1)
-    bar1.grid(row=3,column=0,columnspan=4)
+    Lth.grid(row=1, column=0)
+    ath.grid(row=1, column=1)
+    b.grid(row=2,column=2)
+    c.grid(row=2,column=3)
+    d.grid(row=3,column=2)
+    e.grid(row=3,column=3)
+    L2.grid(row=2,column=0)
+    L3.grid(row=3,column=0)
+    a2.grid(row=2,column=1)
+    a3.grid(row=3,column=1)
+    bar1.grid(row=4,column=0,columnspan=4)
+    ath.insert(INSERT, 4)
     root.mainloop()  # 进入消息循环
