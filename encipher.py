@@ -35,11 +35,12 @@ def realcode1(dir,mima,mima_len,i,num,q,thnum):
         if i+1024>=(min(max,10000000)*num)//thnum:
             q.put('done')
             break
-        a=int(read(dir,i,mima_len//2+1),16)
-        abc = str(hex(a^mima))[2:]
-        if len(abc) % 2 != 0:
+        a=read(dir,i,mima_len//2+2)
+        abc = str(hex(int(a,16)^mima))[2:]
+        while len(abc) < len(a):
             abc = '0' + abc
-        write(abc,dir,i)
+        if len(abc) == len(a):
+            write(abc,dir,i)
         i += 1024
         q.put(1024)
 
@@ -76,6 +77,8 @@ def function1():
     OpenFile = Tk()   #创建新窗口
     OpenFile.withdraw()
     file_path2 = filedialog.askopenfilename(filetypes=[('XUQINYANG FILES','.xqy')]) # 获取路径
+    if len(file_path2)==1:
+        pass
     a3.delete(0, 'end')
     a3.insert(INSERT, file_path2)
 def function2():
@@ -117,6 +120,7 @@ def function4():#jiemi
         tkinter.messagebox.showinfo('解密','解密完成，保存路径为'+save_dir)
 if __name__ == '__main__':
     multiprocessing.freeze_support()
+
     root = Tk()
     root.title('xqy_encipher')
     root.minsize(410, 130)
