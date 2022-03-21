@@ -37,12 +37,9 @@ def realcode1(dir,mima,mima_len,i,num,q,thnum):
             break
         a=int(read(dir,i,mima_len//2+1),16)
         abc = str(hex(a^mima))[2:]
-        while len(abc)<mima_len//2+1:
-            abc = '0'+abc
-        if len(abc)>mima_len//2+1:
-            pass
-        else:
-            write(abc,dir,i)
+        if len(abc) % 2 != 0:
+            abc = '0' + abc
+        write(abc,dir,i)
         i += 1024
         q.put(1024)
 
@@ -120,7 +117,6 @@ def function4():#jiemi
         tkinter.messagebox.showinfo('解密','解密完成，保存路径为'+save_dir)
 if __name__ == '__main__':
     multiprocessing.freeze_support()
-
     root = Tk()
     root.title('xqy_encipher')
     root.minsize(410, 130)
