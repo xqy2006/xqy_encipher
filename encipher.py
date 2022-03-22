@@ -72,103 +72,222 @@ def jiemi(dir,save_dir,mima,mima_len):
     shutil.copyfile(dir, save_dir)
     coding(save_dir,mima,mima_len)
 def function1():
-    global file2
+    global file2,singleflag
     OpenFile = Tk()   #创建新窗口
     OpenFile.withdraw()
     file_path2 = filedialog.askopenfilenames(filetypes=[('XUQINYANG FILES','.xqy')]) # 获取路径
+    a3.configure(state='normal')
     a3.delete(0, 'end')
     a3.insert(INSERT, file_path2)
+    a3.configure(state='disable')
     file2 = file_path2
+    singleflag = 1
 def function2():
-    global file1
+    global file1,singleflag
     OpenFile = Tk()   #创建新窗口
     OpenFile.withdraw()
     file_path1 = filedialog.askopenfilenames() # 获取路径
+    a2.configure(state='normal')
     a2.delete(0, 'end')
     a2.insert(INSERT, file_path1)
+    a2.configure(state='disable')
     file1 = file_path1
+    singleflag = 1
+def functionjia():
+    global file1,singleflag
+    OpenFile = Tk()  # 创建新窗口
+    OpenFile.withdraw()
+    file_path1 = filedialog.askdirectory()
+    file1 = ()
+    for root1, dirs, files in os.walk(file_path1, topdown=False):
+        for a in files:
+            newroot = ''
+            for evestr in root1:
+                if evestr == '\\':
+                    newroot+='/'
+                else:
+                    newroot+=evestr
+            file1+=(newroot+'/'+a,)
+    a2.configure(state='normal')
+    a2.delete(0, 'end')
+    a2.insert(INSERT, file_path1)
+    a2.configure(state='disabled')
+    singleflag = 0
+def functionjie():
+    global file2,singleflag
+    OpenFile = Tk()  # 创建新窗口
+    OpenFile.withdraw()
+    file_path2 = filedialog.askdirectory()
+    file2 = ()
+    for root1, dirs, files in os.walk(file_path2, topdown=False):
+        for a in files:
+            newroot = ''
+            for evestr in root1:
+                if evestr == '\\':
+                    newroot += '/'
+                else:
+                    newroot += evestr
+            file2 += (newroot + '/'+a,)
+    a3.configure(state='normal')
+    a3.delete(0, 'end')
+    a3.insert(INSERT, file_path2)
+    a3.configure(state='disabled')
+    singleflag = 0
 def function3():#jiami
-    global file1,log
-    mima = a1.get()
-    newmima = ''
-    for i in mima:
-        newmima = newmima+str(ord(i))
-    mima = int(newmima)
-    mima_len = len(str(mima))
-    cha = 1024
-    save_dir = filedialog.askdirectory(initialdir=file1[0][:file1[0].rfind('/')])
-    for everypath in file1:
-        if save_dir!='':
-            log.configure(state='normal')
-            log.insert(INSERT, '正在加密'+save_dir+everypath[everypath.rfind('/'):])
-            log.configure(state='disabled')
-            file_stats = os.stat(everypath)
-            bar1['maximum'] = min(int(file_stats.st_size),10000000) + 1
-            jiami(everypath,save_dir+everypath[everypath.rfind('/'):]+'.xqy',mima,mima_len)
-            bar1['value'] = 0
-            log.configure(state='normal')
-            log.insert(INSERT, '  完成！' + '\n')
-            log.configure(state='disabled')
-    log.configure(state='normal')
-    log.insert(INSERT, '加密完成！所有文件均输出至' +save_dir+ '\n')
-    log.configure(state='disabled')
+    global file1,log,singleflag
+    if singleflag == 0:
+        mima = a1.get()
+        newmima = ''
+        for i in mima:
+            newmima = newmima+str(ord(i))
+        mima = int(newmima)
+        mima_len = len(str(mima))
+        cha = 1024
+        save_dir = filedialog.askdirectory(initialdir=a2.get())
+        print(save_dir)
+        for everypath in file1:
+            if save_dir!='':
+                log.configure(state='normal')
+                log.insert(INSERT, '正在加密'+save_dir+everypath[len(a2.get()):])
+                log.configure(state='disabled')
+                if not os.path.exists(save_dir+everypath[len(a2.get()):everypath.rfind('/')]):
+                    os.makedirs(save_dir+everypath[len(a2.get()):everypath.rfind('/')])
+                file_stats = os.stat(everypath)
+                bar1['maximum'] = min(int(file_stats.st_size),10000000) + 1
+                jiami(everypath,save_dir+everypath[len(a2.get()):]+'.xqy',mima,mima_len)
+                bar1['value'] = 0
+                log.configure(state='normal')
+                log.insert(INSERT, '  完成！' + '\n')
+                log.mark_set("insert", "end")
+                log.see("insert")
+                log.configure(state='disabled')
+        log.configure(state='normal')
+        log.insert(INSERT, '加密完成！所有文件均输出至' +save_dir+ '\n')
+        log.configure(state='disabled')
+    elif singleflag==1:
+        mima = a1.get()
+        newmima = ''
+        for i in mima:
+            newmima = newmima + str(ord(i))
+        mima = int(newmima)
+        mima_len = len(str(mima))
+        cha = 1024
+        save_dir = filedialog.askdirectory(initialdir=file1[0][:file1[0].rfind('/')])
+        for everypath in file1:
+            if save_dir != '':
+                log.configure(state='normal')
+                log.insert(INSERT, '正在加密' + save_dir + everypath[everypath.rfind('/'):])
+                log.configure(state='disabled')
+                file_stats = os.stat(everypath)
+                bar1['maximum'] = min(int(file_stats.st_size), 10000000) + 1
+                jiami(everypath, save_dir + everypath[everypath.rfind('/'):] + '.xqy', mima, mima_len)
+                bar1['value'] = 0
+                log.configure(state='normal')
+                log.insert(INSERT, '  完成！' + '\n')
+                log.mark_set("insert", "end")
+                log.see("insert")
+                log.configure(state='disabled')
+        log.configure(state='normal')
+        log.insert(INSERT, '加密完成！所有文件均输出至' + save_dir + '\n')
+        log.configure(state='disabled')
 def function4():#jiemi
-    global file2,log
-    mima = a1.get()
-    newmima = ''
-    for i in mima:
-        newmima = newmima+str(ord(i))
-    mima = int(newmima)
-    mima_len = len(str(mima))
-    cha = 1024
-    save_dir = filedialog.askdirectory(initialdir=file2[0][:file2[0].rfind('/')])
-    for everypath in file2:
-        if save_dir!='':
-            log.configure(state='normal')
-            log.insert(INSERT, '正在解密' + save_dir + everypath[everypath.rfind('/'):])
-            log.configure(state='disabled')
-            file_stats = os.stat(everypath)
-            bar1['maximum'] = min(int(file_stats.st_size),10000000) + 1
-            jiemi(everypath,save_dir+everypath[everypath.rfind('/'):everypath.rfind('.')],mima,mima_len)
-            bar1['value'] = 0
-    log.configure(state='normal')
-    log.insert(INSERT, '加密完成！所有文件均输出至' + save_dir + '\n')
-    log.configure(state='disabled')
+    global file2,log,singleflag
+    if singleflag==0:
+        mima = a1.get()
+        newmima = ''
+        for i in mima:
+            newmima = newmima+str(ord(i))
+        mima = int(newmima)
+        mima_len = len(str(mima))
+        cha = 1024
+        save_dir = filedialog.askdirectory(initialdir=a3.get())
+        for everypath in file2:
+            if save_dir!='':
+                if everypath[everypath.rfind('.'):]=='.xqy':
+                    log.configure(state='normal')
+                    log.insert(INSERT, '正在解密' + save_dir + everypath[len(a3.get()):])
+                    log.configure(state='disabled')
+                    if not os.path.exists(save_dir + everypath[len(a3.get()):everypath.rfind('/')]):
+                        os.makedirs(save_dir + everypath[len(a3.get()):everypath.rfind('/')])
+                    file_stats = os.stat(everypath)
+                    bar1['maximum'] = min(int(file_stats.st_size),10000000) + 1
+                    jiemi(everypath,save_dir+everypath[len(a3.get()):everypath.rfind('.')],mima,mima_len)
+                    log.configure(state='normal')
+                    log.insert(INSERT, '  完成！' + '\n')
+                    log.mark_set("insert", "end")
+                    log.see("insert")
+                    log.configure(state='disabled')
+                    bar1['value'] = 0
+        log.configure(state='normal')
+        log.insert(INSERT, '解密完成！所有文件均输出至' + save_dir + '\n')
+        log.configure(state='disabled')
+    elif singleflag==1:
+        mima = a1.get()
+        newmima = ''
+        for i in mima:
+            newmima = newmima + str(ord(i))
+        mima = int(newmima)
+        mima_len = len(str(mima))
+        cha = 1024
+        save_dir = filedialog.askdirectory(initialdir=file2[0][:file2[0].rfind('/')])
+        for everypath in file2:
+            if save_dir != '':
+                log.configure(state='normal')
+                log.insert(INSERT, '正在解密' + save_dir + everypath[everypath.rfind('/'):])
+                log.configure(state='disabled')
+                file_stats = os.stat(everypath)
+                bar1['maximum'] = min(int(file_stats.st_size), 10000000) + 1
+                jiemi(everypath, save_dir + everypath[everypath.rfind('/'):everypath.rfind('.')], mima, mima_len)
+                log.configure(state='normal')
+                log.insert(INSERT, '  完成！' + '\n')
+                log.mark_set("insert", "end")
+                log.see("insert")
+                log.configure(state='disabled')
+                bar1['value'] = 0
+        log.configure(state='normal')
+        log.insert(INSERT, '解密完成！所有文件均输出至' + save_dir + '\n')
+        log.configure(state='disabled')
 if __name__ == '__main__':
     multiprocessing.freeze_support()
-
+    singleflag = 2
     root = Tk()
     root.title('xqy_encipher')
-    root.minsize(410, 330)
-    root.maxsize(410, 330)
+    root.minsize(510, 330)
+    root.maxsize(510, 330)
     L1 = Label(root, text="密码:",width=10)
     a1 = Entry(root,width=20)
     Lth = Label(root, text="使用进程数:",width=10)
     ath = Entry(root,width=20)
     L2 = Label(root, text="加密:",width=10)
     a2 = Entry(root,width=20)
-    b = Button(root,text='浏览',command=function2,width=10)
+    b = Button(root,text='浏览文件',command=function2,width=10)
+    b1 = Button(root,text='浏览文件夹',command=functionjia,width=10)
     c = Button(root,text='加密',command=function3,width=10)
     L3 = Label(root, text="解密:",width=10)
     a3 = Entry(root,width=20)
-    d = Button(root,text='浏览',command=function1,width=10)
+    d = Button(root,text='浏览文件',command=function1,width=10)
+    d1 = Button(root,text='浏览文件夹',command=functionjie,width=10)
     e = Button(root,text='解密',command=function4,width=10)
-    bar1 = tkinter.ttk.Progressbar(root,length = 410)
-    log = tkinter.scrolledtext.ScrolledText(root, width=55, height=15)
+    bar1 = tkinter.ttk.Progressbar(root,length = 510)
+    log = tkinter.scrolledtext.ScrolledText(root, width=65, height=15)
     L1.grid(row=0,column=0)
     a1.grid(row=0,column=1)  # 将小部件放置到主窗口中
     Lth.grid(row=1, column=0)
     ath.grid(row=1, column=1)
     b.grid(row=2,column=2)
-    c.grid(row=2,column=3)
+    b1.grid(row=2,column=3)
+    c.grid(row=2,column=4)
     d.grid(row=3,column=2)
-    e.grid(row=3,column=3)
+    d1.grid(row=3, column=3)
+    e.grid(row=3,column=4)
     L2.grid(row=2,column=0)
     L3.grid(row=3,column=0)
     a2.grid(row=2,column=1)
     a3.grid(row=3,column=1)
-    bar1.grid(row=4,column=0,columnspan=4)
-    log.grid(row=5,column=0,columnspan=4)
+    bar1.grid(row=4,column=0,columnspan=5)
+    log.grid(row=5,column=0,columnspan=5)
     ath.insert(INSERT, 4)
     log.configure(state='disabled')
+    a3.configure(state='disabled')
+    a2.configure(state='disabled')
     root.mainloop()  # 进入消息循环
