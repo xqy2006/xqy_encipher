@@ -12,34 +12,32 @@ import tkinter.scrolledtext
 import multiprocessing
 from multiprocessing import Queue
 from multiprocessing import Process
-def read(dir,address,length):
-    f = open(dir, "rb+")
+def read(dir,address,length,f):
     f.seek(address, 0)
     result = f.read(length)
     result = b2a_hex(result)
     result = bytes.decode(result)
-    f.close()
     return result
-def write(write_bytes,dir,address):
+def write(write_bytes,dir,address,f):
     write_bytes=bytes().fromhex(write_bytes)
-    f = open(dir, "rb+")
     f.seek(address, 0)
     result=f.write(write_bytes)
-    f.close()
     return result
 def realcode1(dir,mima,mima_len,i,num,q,thnum):
+    f = open(dir, "rb+")
     file_stats = os.stat(dir)
     max = int(file_stats.st_size)
     while True:
         if i+1024>=(min(max,10000000)*num)//thnum:
             q.put('done')
+            f.close()
             break
-        a=read(dir,i,mima_len//2+2)
+        a=read(dir,i,mima_len//2+2,f)
         abc = str(hex(int(a,16)^mima))[2:]
         while len(abc) < len(a):
             abc = '0' + abc
         if len(abc) == len(a):
-            write(abc,dir,i)
+            write(abc,dir,i,f)
         i += 1024
         q.put(1024)
 
