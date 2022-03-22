@@ -8,8 +8,7 @@ from binascii import b2a_hex
 import tkinter.messagebox
 import os
 import shutil
-import ctypes
-from concurrent.futures import ThreadPoolExecutor
+import tkinter.scrolledtext
 import multiprocessing
 from multiprocessing import Queue
 from multiprocessing import Process
@@ -73,22 +72,23 @@ def jiemi(dir,save_dir,mima,mima_len):
     shutil.copyfile(dir, save_dir)
     coding(save_dir,mima,mima_len)
 def function1():
-    global file_path2
+    global file2
     OpenFile = Tk()   #创建新窗口
     OpenFile.withdraw()
-    file_path2 = filedialog.askopenfilename(filetypes=[('XUQINYANG FILES','.xqy')]) # 获取路径
-    if len(file_path2)==1:
-        pass
+    file_path2 = filedialog.askopenfilenames(filetypes=[('XUQINYANG FILES','.xqy')]) # 获取路径
     a3.delete(0, 'end')
     a3.insert(INSERT, file_path2)
+    file2 = file_path2
 def function2():
-    global file_path1
+    global file1
     OpenFile = Tk()   #创建新窗口
     OpenFile.withdraw()
-    file_path1 = filedialog.askopenfilename() # 获取路径
+    file_path1 = filedialog.askopenfilenames() # 获取路径
     a2.delete(0, 'end')
     a2.insert(INSERT, file_path1)
+    file1 = file_path1
 def function3():#jiami
+    global file1,log
     mima = a1.get()
     newmima = ''
     for i in mima:
@@ -96,14 +96,24 @@ def function3():#jiami
     mima = int(newmima)
     mima_len = len(str(mima))
     cha = 1024
-    save_dir = filedialog.asksaveasfilename(initialfile=file_path1+'.xqy',filetypes=[('XUQINYANG FILES','.xqy')])
-    if save_dir!='':
-        file_stats = os.stat(file_path1)
-        bar1['maximum'] = min(int(file_stats.st_size),10000000) + 1
-        jiami(file_path1,save_dir,mima,mima_len)
-        bar1['value'] = 0
-        tkinter.messagebox.showinfo('加密','加密完成，保存路径为'+save_dir)
+    save_dir = filedialog.askdirectory(initialdir=file1[0][:file1[0].rfind('/')])
+    for everypath in file1:
+        if save_dir!='':
+            log.configure(state='normal')
+            log.insert(INSERT, '正在加密'+save_dir+everypath[everypath.rfind('/'):])
+            log.configure(state='disabled')
+            file_stats = os.stat(everypath)
+            bar1['maximum'] = min(int(file_stats.st_size),10000000) + 1
+            jiami(everypath,save_dir+everypath[everypath.rfind('/'):]+'.xqy',mima,mima_len)
+            bar1['value'] = 0
+            log.configure(state='normal')
+            log.insert(INSERT, '  完成！' + '\n')
+            log.configure(state='disabled')
+    log.configure(state='normal')
+    log.insert(INSERT, '加密完成！所有文件均输出至' +save_dir+ '\n')
+    log.configure(state='disabled')
 def function4():#jiemi
+    global file2,log
     mima = a1.get()
     newmima = ''
     for i in mima:
@@ -111,20 +121,26 @@ def function4():#jiemi
     mima = int(newmima)
     mima_len = len(str(mima))
     cha = 1024
-    save_dir = filedialog.asksaveasfilename(initialfile=file_path2[:file_path2.rfind('.')])
-    if save_dir!='':
-        file_stats = os.stat(file_path2)
-        bar1['maximum'] = min(int(file_stats.st_size),10000000) + 1
-        jiemi(file_path2,save_dir,mima,mima_len)
-        bar1['value'] = 0
-        tkinter.messagebox.showinfo('解密','解密完成，保存路径为'+save_dir)
+    save_dir = filedialog.askdirectory(initialdir=file2[0][:file2[0].rfind('/')])
+    for everypath in file2:
+        if save_dir!='':
+            log.configure(state='normal')
+            log.insert(INSERT, '正在解密' + save_dir + everypath[everypath.rfind('/'):])
+            log.configure(state='disabled')
+            file_stats = os.stat(everypath)
+            bar1['maximum'] = min(int(file_stats.st_size),10000000) + 1
+            jiemi(everypath,save_dir+everypath[everypath.rfind('/'):everypath.rfind('.')],mima,mima_len)
+            bar1['value'] = 0
+    log.configure(state='normal')
+    log.insert(INSERT, '加密完成！所有文件均输出至' + save_dir + '\n')
+    log.configure(state='disabled')
 if __name__ == '__main__':
     multiprocessing.freeze_support()
 
     root = Tk()
     root.title('xqy_encipher')
-    root.minsize(410, 130)
-    root.maxsize(410, 130)
+    root.minsize(410, 330)
+    root.maxsize(410, 330)
     L1 = Label(root, text="密码:",width=10)
     a1 = Entry(root,width=20)
     Lth = Label(root, text="使用进程数:",width=10)
@@ -137,7 +153,8 @@ if __name__ == '__main__':
     a3 = Entry(root,width=20)
     d = Button(root,text='浏览',command=function1,width=10)
     e = Button(root,text='解密',command=function4,width=10)
-    bar1 = tkinter.ttk.Progressbar(root,length = 400)
+    bar1 = tkinter.ttk.Progressbar(root,length = 410)
+    log = tkinter.scrolledtext.ScrolledText(root, width=55, height=15)
     L1.grid(row=0,column=0)
     a1.grid(row=0,column=1)  # 将小部件放置到主窗口中
     Lth.grid(row=1, column=0)
@@ -151,5 +168,7 @@ if __name__ == '__main__':
     a2.grid(row=2,column=1)
     a3.grid(row=3,column=1)
     bar1.grid(row=4,column=0,columnspan=4)
+    log.grid(row=5,column=0,columnspan=4)
     ath.insert(INSERT, 4)
+    log.configure(state='disabled')
     root.mainloop()  # 进入消息循环
