@@ -1,3 +1,4 @@
+#备忘：1.改mima为str 2.设置加密解密标志 3.修改realcode
 from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
@@ -12,6 +13,9 @@ import tkinter.scrolledtext
 import multiprocessing
 from multiprocessing import Queue
 from multiprocessing import Process
+import base64
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
 def read(dir,address,length,f):
     f.seek(address, 0)
     result = f.read(length)
@@ -19,11 +23,48 @@ def read(dir,address,length,f):
     result = bytes.decode(result)
     return result
 def write(write_bytes,dir,address,f):
-    write_bytes=bytes().fromhex(write_bytes)
+    try:
+        write_bytes = bytes().fromhex(write_bytes)
+    except:
+        print(write_bytes)
     f.seek(address, 0)
     result=f.write(write_bytes)
     return result
-def realcode1(dir,mima,mima_len,i,num,q,thnum):
+def realcode1(dir,mima,mima_len,i,num,q,thnum,flagmi):
+    def jiamihanshu(mima, readdata, iv):
+        secret = mima  # 由用户输入的16位或24位或32位长的初始密码字符串
+
+        # 密钥处理,16的整数倍
+        def add_to_16(text):
+            while len(text) % 16 != 0:
+                text += '\0'
+            return (text)
+
+        secret = add_to_16(secret)
+        iv = bytes().fromhex(iv)
+        cipher = AES.new(secret.encode('utf-8'), AES.MODE_CBC, iv)
+        data = readdata  # 16beishu
+        data = bytes().fromhex(data)
+        encrypt_data = cipher.encrypt(data)  # 输入需要加密的字符串，注意字符串长度要是16的倍数。16,32,48..
+        encrypt_data = bytes.decode(b2a_hex(encrypt_data))
+        return encrypt_data
+
+    def jiemihanshu(mima, readdata, iv):
+        secret = mima  # 由用户输入的16位或24位或32位长的初始密码字符串
+
+        def add_to_16(text):
+            while len(text) % 16 != 0:
+                text += '\0'
+            return (text)
+
+        secret = add_to_16(secret)
+        iv = bytes().fromhex(iv)  # 随机获取16位变量
+        encrypt_data = bytes().fromhex(readdata)
+        cipher = AES.new(secret.encode('utf-8'), AES.MODE_CBC, iv)
+        decrypt_data = cipher.decrypt(encrypt_data)
+        decrypt_data = bytes.decode(b2a_hex(decrypt_data))
+        return decrypt_data
+
     f = open(dir, "rb+")
     file_stats = os.stat(dir)
     max = int(file_stats.st_size)
@@ -32,23 +73,23 @@ def realcode1(dir,mima,mima_len,i,num,q,thnum):
             q.put('done')
             f.close()
             break
-        a=read(dir,i,mima_len//2+2,f)
-        abc = str(hex(int(a,16)^mima))[2:]
-        while len(abc) < len(a):
-            abc = '0' + abc
-        if len(abc) == len(a):
-            write(abc,dir,i,f)
+        a = read(dir, i,32, f)
+        if flagmi == 1:
+            abc = jiamihanshu(mima,a,"20060815200608152006081520060815")
+        if flagmi == 2:
+            abc = jiemihanshu(mima,a,"20060815200608152006081520060815")
+        write(abc,dir,i,f)
         i += 1024
         q.put(1024)
 
-def coding(dir,mima,mima_len):
+def coding(dir,mima,mima_len,flagmi):
     file_stats = os.stat(dir)
     max = int(file_stats.st_size)
     q = Queue()
     threads = []
     thnum = int(ath.get())
     for i in range(int(ath.get())):
-        threads.append(multiprocessing.Process(target=realcode1, args=(dir,mima,mima_len,(min(max,10000000)*i)//int(ath.get()),i+1,q,thnum,)))
+        threads.append(multiprocessing.Process(target=realcode1, args=(dir,mima,mima_len,(min(max,10000000)*i)//int(ath.get()),i+1,q,thnum,flagmi,)))
     for i in threads:
         i.start()
     times = 0
@@ -65,10 +106,10 @@ def coding(dir,mima,mima_len):
         i.join()
 def jiami(dir,save_dir,mima,mima_len):
     shutil.copyfile(dir,save_dir)
-    coding(save_dir,mima,mima_len)
+    coding(save_dir,mima,mima_len,1)
 def jiemi(dir,save_dir,mima,mima_len):
     shutil.copyfile(dir, save_dir)
-    coding(save_dir,mima,mima_len)
+    coding(save_dir,mima,mima_len,2)
 def function1():
     global file2,singleflag
     OpenFile = Tk()   #创建新窗口
@@ -138,8 +179,8 @@ def function3():#jiami
         newmima = ''
         for i in mima:
             newmima = newmima+str(ord(i))
-        mima = int(newmima)
-        mima_len = len(str(mima))
+        mima = newmima
+        mima_len = len(mima)
         cha = 1024
         save_dir = filedialog.askdirectory(initialdir=a2.get())
         print(save_dir)
@@ -167,8 +208,8 @@ def function3():#jiami
         newmima = ''
         for i in mima:
             newmima = newmima + str(ord(i))
-        mima = int(newmima)
-        mima_len = len(str(mima))
+        mima = newmima
+        mima_len = len(mima)
         cha = 1024
         save_dir = filedialog.askdirectory(initialdir=file1[0][:file1[0].rfind('/')])
         for everypath in file1:
@@ -195,8 +236,8 @@ def function4():#jiemi
         newmima = ''
         for i in mima:
             newmima = newmima+str(ord(i))
-        mima = int(newmima)
-        mima_len = len(str(mima))
+        mima = newmima
+        mima_len = len(mima)
         cha = 1024
         save_dir = filedialog.askdirectory(initialdir=a3.get())
         for everypath in file2:
@@ -224,8 +265,8 @@ def function4():#jiemi
         newmima = ''
         for i in mima:
             newmima = newmima + str(ord(i))
-        mima = int(newmima)
-        mima_len = len(str(mima))
+        mima = newmima
+        mima_len = len(mima)
         cha = 1024
         save_dir = filedialog.askdirectory(initialdir=file2[0][:file2[0].rfind('/')])
         for everypath in file2:
