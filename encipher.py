@@ -1,4 +1,3 @@
-#备忘：1.改mima为str 2.设置加密解密标志 3.修改realcode
 from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
