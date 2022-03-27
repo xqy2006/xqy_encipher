@@ -29,7 +29,7 @@ def write(write_bytes,dir,address,f):
     f.seek(address, 0)
     result=f.write(write_bytes)
     return result
-def realcode1(dir,mima,mima_len,i,num,q,thnum,flagmi):
+def realcode1(dir,mima,mima_len,flagmi):
     def jiamihanshu(mima, readdata, iv):
         secret = mima  # 由用户输入的16位或24位或32位长的初始密码字符串
 
@@ -72,6 +72,7 @@ def realcode1(dir,mima,mima_len,i,num,q,thnum,flagmi):
     f = open(dir, "rb+")
     file_stats = os.stat(dir)
     max = int(file_stats.st_size)
+    i = 0
     while True:
         a = read(dir, i,32, f)
         if flagmi == 1:
@@ -80,33 +81,15 @@ def realcode1(dir,mima,mima_len,i,num,q,thnum,flagmi):
             abc = jiemihanshu(mima,a,"20060815200608152006081520060815")
         write(abc,dir,i,f)
         i += 1024
-        q.put(1024)
-        if i+1024>=(min(max,10000000)*num)//thnum:
-            q.put('done')
+        bar1.step(1024)
+        root.update()
+        if i+1024>=(min(max,10000000)):
             f.close()
             break
 def coding(dir,mima,mima_len,flagmi):
     file_stats = os.stat(dir)
     max = int(file_stats.st_size)
-    q = Queue()
-    threads = []
-    thnum = int(ath.get())
-    for i in range(int(ath.get())):
-        threads.append(multiprocessing.Process(target=realcode1, args=(dir,mima,mima_len,(min(max,10000000)*i)//int(ath.get()),i+1,q,thnum,flagmi,)))
-    for i in threads:
-        i.start()
-    times = 0
-    while True:
-        stepnum = q.get()
-        if stepnum=='done':
-            times += 1
-            if times == int(ath.get()):
-                break
-        else:
-            bar1.step(stepnum)
-            root.update()
-    for i in threads:
-        i.terminate()
+    realcode1(dir,mima,mima_len,flagmi,)
 def jiami(dir,save_dir,mima,mima_len):
     shutil.copyfile(dir,save_dir)
     coding(save_dir,mima,mima_len,1)
@@ -318,20 +301,18 @@ if __name__ == '__main__':
     log = tkinter.scrolledtext.ScrolledText(root, width=65, height=15)
     L1.grid(row=0,column=0)
     a1.grid(row=0,column=1)  # 将小部件放置到主窗口中
-    Lth.grid(row=1, column=0)
-    ath.grid(row=1, column=1)
-    b.grid(row=2,column=2)
-    b1.grid(row=2,column=3)
-    c.grid(row=2,column=4)
-    d.grid(row=3,column=2)
-    d1.grid(row=3, column=3)
-    e.grid(row=3,column=4)
-    L2.grid(row=2,column=0)
-    L3.grid(row=3,column=0)
-    a2.grid(row=2,column=1)
-    a3.grid(row=3,column=1)
-    bar1.grid(row=4,column=0,columnspan=5)
-    log.grid(row=5,column=0,columnspan=5)
+    b.grid(row=1,column=2)
+    b1.grid(row=1,column=3)
+    c.grid(row=1,column=4)
+    d.grid(row=2,column=2)
+    d1.grid(row=2, column=3)
+    e.grid(row=2,column=4)
+    L2.grid(row=1,column=0)
+    L3.grid(row=2,column=0)
+    a2.grid(row=1,column=1)
+    a3.grid(row=2,column=1)
+    bar1.grid(row=3,column=0,columnspan=5)
+    log.grid(row=4,column=0,columnspan=5)
     ath.insert(INSERT, 4)
     log.configure(state='disabled')
     a3.configure(state='disabled')
