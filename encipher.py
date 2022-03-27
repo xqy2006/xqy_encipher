@@ -38,15 +38,17 @@ def realcode1(dir,mima,mima_len,i,num,q,thnum,flagmi):
             while len(text) % 16 != 0:
                 text += '\0'
             return (text)
-
         secret = add_to_16(secret)
         iv = bytes().fromhex(iv)
         cipher = AES.new(secret.encode('utf-8'), AES.MODE_CBC, iv)
         data = readdata  # 16beishu
         data = bytes().fromhex(data)
-        encrypt_data = cipher.encrypt(data)  # 输入需要加密的字符串，注意字符串长度要是16的倍数。16,32,48..
-        encrypt_data = bytes.decode(b2a_hex(encrypt_data))
-        return encrypt_data
+        try :
+            encrypt_data = cipher.encrypt(data)  # 输入需要加密的字符串，注意字符串长度要是16的倍数。16,32,48..
+            encrypt_data = bytes.decode(b2a_hex(encrypt_data))
+            return encrypt_data
+        except:
+            return bytes.decode(b2a_hex(data))
 
     def jiemihanshu(mima, readdata, iv):
         secret = mima  # 由用户输入的16位或24位或32位长的初始密码字符串
@@ -60,18 +62,17 @@ def realcode1(dir,mima,mima_len,i,num,q,thnum,flagmi):
         iv = bytes().fromhex(iv)  # 随机获取16位变量
         encrypt_data = bytes().fromhex(readdata)
         cipher = AES.new(secret.encode('utf-8'), AES.MODE_CBC, iv)
-        decrypt_data = cipher.decrypt(encrypt_data)
-        decrypt_data = bytes.decode(b2a_hex(decrypt_data))
-        return decrypt_data
+        try:
+            decrypt_data = cipher.decrypt(encrypt_data)
+            decrypt_data = bytes.decode(b2a_hex(decrypt_data))
+            return decrypt_data
+        except:
+            return bytes.decode(b2a_hex(encrypt_data))
 
     f = open(dir, "rb+")
     file_stats = os.stat(dir)
     max = int(file_stats.st_size)
     while True:
-        if i+1024>=(min(max,10000000)*num)//thnum:
-            q.put('done')
-            f.close()
-            break
         a = read(dir, i,32, f)
         if flagmi == 1:
             abc = jiamihanshu(mima,a,"20060815200608152006081520060815")
@@ -80,7 +81,10 @@ def realcode1(dir,mima,mima_len,i,num,q,thnum,flagmi):
         write(abc,dir,i,f)
         i += 1024
         q.put(1024)
-
+        if i+1024>=(min(max,10000000)*num)//thnum:
+            q.put('done')
+            f.close()
+            break
 def coding(dir,mima,mima_len,flagmi):
     file_stats = os.stat(dir)
     max = int(file_stats.st_size)
@@ -102,7 +106,7 @@ def coding(dir,mima,mima_len,flagmi):
             bar1.step(stepnum)
             root.update()
     for i in threads:
-        i.join()
+        i.terminate()
 def jiami(dir,save_dir,mima,mima_len):
     shutil.copyfile(dir,save_dir)
     coding(save_dir,mima,mima_len,1)
@@ -188,6 +192,7 @@ def function3():#jiami
                 log.configure(state='normal')
                 log.insert(INSERT, '正在加密'+save_dir+everypath[len(a2.get()):])
                 log.configure(state='disabled')
+                root.update()
                 if not os.path.exists(save_dir+everypath[len(a2.get()):everypath.rfind('/')]):
                     os.makedirs(save_dir+everypath[len(a2.get()):everypath.rfind('/')])
                 file_stats = os.stat(everypath)
@@ -199,6 +204,7 @@ def function3():#jiami
                 log.mark_set("insert", "end")
                 log.see("insert")
                 log.configure(state='disabled')
+                root.update()
         log.configure(state='normal')
         log.insert(INSERT, '加密完成！所有文件均输出至' +save_dir+ '\n')
         log.configure(state='disabled')
@@ -216,6 +222,7 @@ def function3():#jiami
                 log.configure(state='normal')
                 log.insert(INSERT, '正在加密' + save_dir + everypath[everypath.rfind('/'):])
                 log.configure(state='disabled')
+                root.update()
                 file_stats = os.stat(everypath)
                 bar1['maximum'] = min(int(file_stats.st_size), 10000000) + 1
                 jiami(everypath, save_dir + everypath[everypath.rfind('/'):] + '.xqy', mima, mima_len)
@@ -225,6 +232,7 @@ def function3():#jiami
                 log.mark_set("insert", "end")
                 log.see("insert")
                 log.configure(state='disabled')
+                root.update()
         log.configure(state='normal')
         log.insert(INSERT, '加密完成！所有文件均输出至' + save_dir + '\n')
         log.configure(state='disabled')
